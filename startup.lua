@@ -23,7 +23,7 @@ local conversations = {}
 local newMessages = {}
 
 -- URL GitHub pour la mise à jour (remplacez par votre URL)
-local GITHUB_URL = "https://raw.githubusercontent.com/VOTRE_USERNAME/VOTRE_REPO/main/messagerie.lua"
+local GITHUB_URL = "https://raw.githubusercontent.com/lol299/Messagerie-CC-tweaked/refs/heads/main/startup.lua"
 
 -- Variables d'interface
 local currentScreen = "home"
