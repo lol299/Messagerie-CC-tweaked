@@ -23,7 +23,7 @@ local conversations = {}
 local newMessages = {}
 
 -- URL GitHub pour la mise à jour (remplacez par votre URL)
-local GITHUB_URL = "https://raw.githubusercontent.com/lol299/Messagerie-CC-tweaked/refs/heads/main/startup.lua"
+local GITHUB_URL = https://raw.githubusercontent.com/lol299/Messagerie-CC-tweaked/refs/heads/main/startup.lua"
 
 -- Variables d'interface
 local currentScreen = "home"
@@ -299,6 +299,35 @@ local function drawHeader(title)
     screen.clearLine()
 end
 
+-- Nouvelle fonction pour dessiner la barre d'information de distance (modifiée)
+local function drawDistanceBar(convId)
+    local w, h = screen.getSize()
+    local distance = distances[convId]
+    
+    -- Ligne d'information de distance avec fond gris
+    screen.setBackgroundColor(colors.gray)
+    screen.setCursorPos(1, 3)
+    screen.clearLine()
+    
+    if distance then
+        local distanceText = "Distance: " .. math.floor(distance) .. " blocs"
+        
+        -- Centrer le texte
+        local textX = math.floor((w - #distanceText) / 2)
+        screen.setCursorPos(textX, 3)
+        screen.setTextColor(getSignalColor(distance))
+        screen.write(distanceText)
+    else
+        local offlineText = "Hors ligne"
+        local textX = math.floor((w - #offlineText) / 2)
+        screen.setCursorPos(textX, 3)
+        screen.setTextColor(colors.black)
+        screen.write(offlineText)
+    end
+    
+    screen.setTextColor(colors_text)
+end
+
 local function drawConversationItem(x, y, width, conv, isNew)
     local bgColor = isNew and colors_accent or colors_secondary
     local textColor = isNew and colors.black or colors_text
@@ -440,18 +469,22 @@ local function drawConversationScreen(convId)
     end
     
     drawHeader("Chat - " .. contactName)
+    
+    -- Dessiner la barre d'information de distance
+    drawDistanceBar(convId)
+    
     buttons = {}
     
-    -- Messages avec retour à la ligne (plus d'affichage de distance)
+    -- Messages (sans affichage de distance dans les messages)
     local msgs = conversations[convId] or {}
     local displayLines = {}
     
     -- Préparer toutes les lignes d'affichage
     for _, msg in ipairs(msgs) do
         local sender = msg.sent and "Vous" or contactName:sub(1, 8)
-        local time = os.date("%H:%M", msg.timestamp / 1000)
-        -- Format compact: [heure] nom: message
-        local prefix = "[" .. time .. "] " .. sender .. ": "
+        
+        -- Format simple: nom: message
+        local prefix = sender .. ": "
         
         -- Calculer l'espace disponible pour le message
         local maxMsgWidth = math.max(10, w - 2 - #prefix)
@@ -474,9 +507,9 @@ local function drawConversationScreen(convId)
     end
     
     -- Afficher les lignes (scroll automatique vers le bas)
-    local availableLines = h - 4  -- Plus de lignes disponibles car pas d'affichage de distance
+    local availableLines = h - 5  -- -1 pour la barre de distance
     local startIdx = math.max(1, #displayLines - availableLines + 1)
-    local currentY = 3  -- Commencer directement à la ligne 3
+    local currentY = 4  -- Commencer après la barre de distance
     
     for i = startIdx, #displayLines do
         if currentY <= h - 2 then
@@ -487,6 +520,7 @@ local function drawConversationScreen(convId)
             screen.clearLine()
             screen.setCursorPos(2, currentY)
             screen.write(line.text:sub(1, w - 2))
+            
             currentY = currentY + 1
         end
     end
@@ -739,7 +773,7 @@ local function handleClick(x, y)
                         if id and id ~= myID then
                             contacts[name] = id
                             saveData()
-                            drawContactsSearch()
+                            drawContactsScreen()
                         end
                     end
                 elseif button.text == "Retour" then
